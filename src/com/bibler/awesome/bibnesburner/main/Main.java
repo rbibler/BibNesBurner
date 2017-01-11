@@ -15,7 +15,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import com.bibler.awesome.bibnesburner.burnerutils.BitBurner;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
-import com.bibler.awesome.bibnesburner.serialutils.MySerial;
+import com.bibler.awesome.bibnesburner.serialutils.SerialPortInstance;
 import com.bibler.awesome.bibnesburner.ui.MainFrame;
 
 public class Main {

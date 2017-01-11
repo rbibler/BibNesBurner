@@ -8,13 +8,13 @@ import java.util.Stack;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
 import com.bibler.awesome.bibnesburner.interfaces.Notifiable;
 import com.bibler.awesome.bibnesburner.interfaces.Notifier;
-import com.bibler.awesome.bibnesburner.serialutils.MySerial;
+import com.bibler.awesome.bibnesburner.serialutils.SerialPortInstance;
 import com.bibler.awesome.bibnesburner.utils.Utility;
 
 public class BitBurner implements Notifiable, Notifier {
 	
 	private NESFile fileToBurn;
-	private MySerial serial;
+	private SerialPortInstance serial;
 	private boolean messageSuccess = false;
 	private boolean serialIndicatesFailure = false;
 	private int address;
@@ -38,7 +38,7 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	public BitBurner() {
 		state = PRG_BURN;
-		serial = new MySerial();
+		serial = new SerialPortInstance();
 		try {
 			serial.connect("COM4", 115200);
 		} catch (Exception e) {
@@ -267,7 +267,7 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	@Override
 	public void takeNotice(Object notifier, String s) {
-		if(notifier instanceof MySerial) {
+		if(notifier instanceof SerialPortInstance) {
 			processMessage(s);
 		}
 	}

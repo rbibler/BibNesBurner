@@ -54,7 +54,7 @@ public class ButtonPanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				String s = (String) serialChooserBox.getSelectedItem();
 				try {
-					parentFrame.getSerialManager().connect(s, 19200);
+					parentFrame.connectSerial(s);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -106,7 +106,7 @@ public class ButtonPanel extends JPanel {
 				parentFrame.initializeBurnSequence();
 				break;
 			case "READ":
-				parentFrame.initializeReadSequence();
+				//parentFrame.initializeReadSequence();
 				break;
 		
 			}

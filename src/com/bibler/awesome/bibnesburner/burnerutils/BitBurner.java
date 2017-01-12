@@ -13,39 +13,36 @@ import com.bibler.awesome.bibnesburner.utils.Utility;
 
 public class BitBurner implements Notifiable, Notifier {
 	
+	private final int WRITE_MODE = 0x03;
+	private final int READ_ALL = 0x04;
+	
 	private NESFile fileToBurn;
 	private SerialPortInstance serial;
 	private boolean messageSuccess = false;
 	private boolean serialIndicatesFailure = false;
-	private int address;
 	private int state;
 	private long burnStartTime;
 	private long timeOutTime = 8000;
+	
 	public static String updateMessageAreaChar = "M";
 	public static  String updateProgressBarChar = "B";
 	public static String updateHexAreaChar = "H";
+	
 	private ArrayList<Notifiable> objectsToNotify = new ArrayList<Notifiable>();
 	
 	private final int PRG_BURN = 0x32;
 	private final int CHR_BURN = 0x33;
 	private final String newLine = "\n";
-	private Stack<String> messageStack = new Stack<String>();
+	
 	private boolean readingRom;
 	private String[] dataIn = new String[0x8000];
-	private int pageSize = 64;
-	private int chipSize = 0x8000;
 	private int currentRomSize;
+	
+	private Chip chip;
 	
 	public BitBurner() {
 		state = PRG_BURN;
-		//serial = new SerialPortInstance();
-		try {
-			//serial.connect("COM4", 115200);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//serial.registerObjectToNotify(this);
+		chip = ChipFactory.createChip(ChipFactory.AT28C256);
 	}
 	
 	public void registerObjectToNotify(Notifiable objectToNotify) {
@@ -54,35 +51,18 @@ public class BitBurner implements Notifiable, Notifier {
 		}
 	}
 	
+	public void setSerialPort(SerialPortInstance serial) {
+		this.serial = serial;
+		serial.registerObjectToNotify(this);
+	}
+	
 	public void setFile(NESFile fileToBurn) {
 		this.fileToBurn = fileToBurn;
 	}
 	
-	public void connectToCommPort(String commPort) {
-		try {
-			//serial.connect(commPort, 115200);
-		} catch(Exception e) {}
-	}
-	
-	public void changeChip(String chip) {
-		switch(chip) {
-		case "AT28C256":
-			serial.writeString("C0" + newLine);
-			pageSize = 64;
-			chipSize = 0x8000;
-			break;
-		case "GLS29EE010":
-			pageSize = 128;
-			chipSize = 0x20000;
-			serial.writeString("C1" + newLine);
-			break;
-		case "AM29F040":
-			pageSize = 64;
-			chipSize = 0x80000;
-			serial.writeString("C2" + newLine);
-			break;
-		}
-		dataIn = new String[chipSize];
+	public void changeChip(String chipID) {
+		chip = ChipFactory.createChip(chipID);
+		dataIn = new String[chip.getChipSize()];
 		messageSuccess = false;
 		long sentWriteMessageTime = System.currentTimeMillis();
 		while(!messageSuccess) {
@@ -103,18 +83,14 @@ public class BitBurner implements Notifiable, Notifier {
 		Thread t = new Thread(new Runnable() {
 			@Override 
 			public void run() {
-				if(state == PRG_BURN) {
-					writePRGBlocks();
-				} else {
-					writeCHRBlocks();
-				}
+				writeROM();
 			}
 		});
 		t.start();
 	}
 	
 	private void initiateWriteSequence(int addressToWrite) {
-		serial.writeString("W" + Utility.wordToHex(addressToWrite) + newLine);
+		serial.writeInstruction(WRITE_MODE);
 		long sentWriteMessageTime = System.currentTimeMillis();
 		while(!messageSuccess) {
 			if(System.currentTimeMillis() - sentWriteMessageTime >= timeOutTime) {
@@ -148,24 +124,20 @@ public class BitBurner implements Notifiable, Notifier {
 		messageSuccess = false;
 	}
 	
-	private void writePRGBlocks() {
-		
-		System.out.println(pageSize);
-		address = 0;
-		byte[] prg = fileToBurn.getPrg();
-		currentRomSize = prg.length;
-		//sendRomSize();
+	private void writeROM() {
+		chip.resetBurnAddress();
+		byte[] rom = state == PRG_BURN ? fileToBurn.getPrg() : fileToBurn.getChr();
+		currentRomSize = rom.length;
 		initiateWriteSequence(0);
-		OutputStream outStream = serial.getSerialOut();
+		final int pageSize = chip.getPageSize();
+		int currentBurnAddress;
 		do {
-			try {
-				outStream.write(prg, address, pageSize);
-				outStream.flush();
-			} catch (IOException e) {}
+			currentBurnAddress = chip.getCurrentBurnAddress();
+			serial.writeBlock(rom, currentBurnAddress, pageSize);
 			long time = System.currentTimeMillis();
 			while(messageSuccess == false){
 				if(System.currentTimeMillis() - time > 15000 || serialIndicatesFailure) {
-					logMessage(updateMessageAreaChar + " FAIL at " + address + "!");
+					logMessage(updateMessageAreaChar + " FAIL at " + currentBurnAddress + "!");
 					serialIndicatesFailure = false;
 					break;
 				}
@@ -173,51 +145,27 @@ public class BitBurner implements Notifiable, Notifier {
 					Thread.sleep(10);
 				} catch(InterruptedException e) {}
 			}
-			address += pageSize;
-			logMessage(updateProgressBarChar + ((float) (address) / currentRomSize));
+			chip.incrementBurnAddressByPage();
+			logMessage(updateProgressBarChar + ((float) (chip.getCurrentBurnAddress()) / currentRomSize));
 			messageSuccess = false;
 			
-		} while(address < currentRomSize);
+		} while(chip.getCurrentBurnAddress() < currentRomSize);
+		
+		if(state == PRG_BURN) {
+			finishPRG();
+		} else {
+			finishCHR();
+		}
+	}
+	
+	private void finishPRG() {
 		logMessage(updateMessageAreaChar + "Finished PRG burn in " + (System.currentTimeMillis() - burnStartTime) + " milliseconds!" + 
 				"\n Please swap for CHR rom and press \"Burn\"");
 		state = CHR_BURN;
-		startReadAndCompareSequence();
-		
 	}
 	
-	private void writeCHRBlocks() {
-		address = 0;
-		initiateWriteSequence(0);
-		byte[] chr = fileToBurn.getChr();
-		currentRomSize = chr.length;
-		OutputStream outStream = serial.getSerialOut();
-		do {
-			try {
-				outStream.write(chr, address, pageSize);
-				outStream.flush();
-			} catch (IOException e) {}
-			long time = System.currentTimeMillis();
-			while(messageSuccess == false){
-				if(System.currentTimeMillis() - time > 2000) {
-					logMessage(updateMessageAreaChar + "FAIL!");
-					break;
-				}
-				try {
-					Thread.sleep(10);
-				} catch(InterruptedException e) {}
-			}
-			address += pageSize;
-			logMessage(updateProgressBarChar + ((float) (address) / currentRomSize));
-			messageSuccess = false;
-		} while(address < currentRomSize);
-		logMessage(updateMessageAreaChar + "Finished burn in " + (System.currentTimeMillis() - burnStartTime) + " milliseconds!");
-	}
-	
-	public void startReadAndCompareSequence() {
-		address = 0;
-		readingRom = true;
-		logMessage(updateMessageAreaChar + "About to Read!");
-		//serial.writeString("R" + newLine);
+	private void finishCHR() {
+		state = PRG_BURN;
 	}
 	
 	private void processDataIn() {
@@ -241,13 +189,14 @@ public class BitBurner implements Notifiable, Notifier {
 	public synchronized void processMessage(String s) {
 		System.out.println(s);
 		if(readingRom) {
+			int currentReadAddress = chip.getCurrentReadAddress();
 			if(s.length() == 1) {
 				s = "0" + s;
 			}
-			dataIn[address] = s;
-			address++;
-			logMessage(updateProgressBarChar + ((float) (address) / chipSize));
-			if(address >= dataIn.length) {
+			dataIn[currentReadAddress++] = s;
+			chip.setReadAddress(currentReadAddress);
+			logMessage(updateProgressBarChar + ((float) (currentReadAddress) / chip.getChipSize()));
+			if(currentReadAddress >= dataIn.length) {
 				logMessage(updateMessageAreaChar + "Read finished!");
 				readingRom = false;
 				processDataIn();

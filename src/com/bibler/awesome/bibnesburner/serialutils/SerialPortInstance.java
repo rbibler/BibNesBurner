@@ -165,4 +165,29 @@ public class SerialPortInstance implements Runnable, Notifier{
 		}	
 	}
 
+	public void writeInstruction(int instruction) {
+		try {
+			out.write(START_BYTE);
+			out.write(instruction);
+			out.write(STOP_BYTE);
+			out.flush();
+		} catch(IOException e) {}
+	}
+	
+	public void writeBlock(byte[] block) {
+		try {
+			out.write(START_BYTE);
+			out.write(block);
+			out.write(STOP_BYTE);
+		} catch(IOException e) {}
+	}
+	
+	public void writeBlock(byte[] block, int startOffset, int length) {
+		try {
+			out.write(START_BYTE);
+			out.write(block, startOffset, length);
+			out.write(STOP_BYTE);
+		} catch(IOException e) {}
+	}
+
 }

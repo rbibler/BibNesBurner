@@ -92,4 +92,8 @@ public class SerialPortManager implements Runnable {
 	public void run() {
 		
 	}
+
+	public SerialPortInstance getActiveSerialPort() {
+		return currentSerialPort;
+	}
 }

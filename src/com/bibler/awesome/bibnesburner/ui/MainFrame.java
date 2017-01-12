@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import com.bibler.awesome.bibnesburner.burnerutils.BitBurner;
 import com.bibler.awesome.bibnesburner.fileutils.FileLoader;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
+import com.bibler.awesome.bibnesburner.serialutils.SerialPortInstance;
 import com.bibler.awesome.bibnesburner.serialutils.SerialPortManager;
 
 public class MainFrame extends JFrame {
@@ -47,16 +48,26 @@ public class MainFrame extends JFrame {
 		burner.startFullBurnSequence();
 	}
 	
-	public void initializeReadSequence() {
-		burner.startReadAndCompareSequence();
-	}
-	
 	public void changeChip(String chip) {
 		burner.changeChip(chip);
 	}
 
 	public SerialPortManager getSerialManager() {
 		return serialManager;
+	}
+
+	public void connectSerial(String s) {
+		try {
+			serialManager.connect(s, 19200);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		SerialPortInstance port = serialManager.getActiveSerialPort();
+		if(port != null) {
+			burner.setSerialPort(port);
+		} else {
+			System.out.println("NO PORT!");
+		}
 	}
 
 }

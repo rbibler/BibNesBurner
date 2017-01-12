@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.HashSet;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -16,7 +17,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.bibler.awesome.bibnesburner.burnerutils.BitBurner;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
 import com.bibler.awesome.bibnesburner.serialutils.SerialPortInstance;
+import com.bibler.awesome.bibnesburner.serialutils.SerialPortManager;
 import com.bibler.awesome.bibnesburner.ui.MainFrame;
+
+import gnu.io.CommPortIdentifier;
 
 public class Main {
 	
@@ -44,28 +48,7 @@ public class Main {
 	    }
 	        
 		MainFrame mainFrame = new MainFrame();
-		/*File f = new File("C:/users/ryan/desktop/nes/roms/chalnger.nes");
-		FileInputStream fstream = null;
-		try {
-			fstream = new FileInputStream(f);
-		} catch(IOException e) {e.printStackTrace();}
-		NESFile nesFile = new NESFile(fstream);
 		
-		MySerial serial = new MySerial();
-		try {
-			serial.connect("COM3", 115200);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		BitBurner burner = new BitBurner();
-		burner.setFile(nesFile);
-		burner.setSerial(serial);
-		try {
-			Thread.sleep(3000);
-		} catch(InterruptedException e) {}
-		burner.startFullBurnSequence();
-		*/
 	}
 
 }

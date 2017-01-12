@@ -1,5 +1,6 @@
 package com.bibler.awesome.bibnesburner.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
@@ -29,7 +30,8 @@ public class MessagePanel extends JPanel implements Notifiable {
 		panelScroll = new JScrollPane(messageArea);
 		panelScroll.setPreferredSize(new Dimension(width, height));
 		panelScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		add(panelScroll);
+		setLayout(new BorderLayout());
+		add(panelScroll, BorderLayout.CENTER);
 	}
 
 	@Override

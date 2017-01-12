@@ -38,14 +38,14 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	public BitBurner() {
 		state = PRG_BURN;
-		serial = new SerialPortInstance();
+		//serial = new SerialPortInstance();
 		try {
-			serial.connect("COM4", 115200);
+			//serial.connect("COM4", 115200);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		serial.registerObjectToNotify(this);
+		//serial.registerObjectToNotify(this);
 	}
 	
 	public void registerObjectToNotify(Notifiable objectToNotify) {
@@ -60,7 +60,7 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	public void connectToCommPort(String commPort) {
 		try {
-			serial.connect(commPort, 115200);
+			//serial.connect(commPort, 115200);
 		} catch(Exception e) {}
 	}
 	

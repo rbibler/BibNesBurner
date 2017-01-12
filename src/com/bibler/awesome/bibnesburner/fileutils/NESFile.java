@@ -103,4 +103,15 @@ public class NESFile implements Notifier {
 		
 	}
 
+	public int[] getCombinedData() {
+		int[] combined = new int[prg.length + chr.length];
+		for(int i = 0; i < prg.length; i++) {
+			combined[i] = prg[i];
+		}
+		for(int i = 0; i < chr.length; i++) {
+			combined[i + (prg.length - 1)] = chr[i];
+		}
+		return combined;
+	}
+
 }

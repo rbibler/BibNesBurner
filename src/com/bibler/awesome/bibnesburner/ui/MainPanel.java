@@ -50,6 +50,7 @@ public class MainPanel extends JPanel {
 	}
 	
 	private void initializeButtonPanel(MainFrame frame) {
+		
 		buttonPanel = new ButtonPanel(width, (int) (height * buttonPanelHeightPercent), frame);
 		c.gridx = 0;
 		c.gridy = 0;

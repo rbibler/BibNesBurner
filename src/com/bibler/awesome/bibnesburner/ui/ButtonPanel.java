@@ -7,17 +7,21 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import gnu.io.CommPortIdentifier;
+
 public class ButtonPanel extends JPanel {
 	
 	private JButton loadButton;
 	private JButton readButton;
 	private JButton writeButton;
+	private JComboBox<String> chipChooserBox;
 	private JComboBox<String> serialChooserBox;
 	private MainFrame parentFrame;
 	
@@ -26,23 +30,36 @@ public class ButtonPanel extends JPanel {
 		this.parentFrame = parentFrame;
 		setPreferredSize(new Dimension(width, height));
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		initialize();
+		initialize(parentFrame.getSerialManager().getAvailableSerialPortNames());
 		initializeButtonClicks();
 	}
 	
-	private void initialize() {
+	private void initialize(String[] ports) {
 		loadButton = new JButton("Load Rom");
 		writeButton = new JButton("Burn Rom");
 		readButton = new JButton("Read Rom");
-		serialChooserBox = new JComboBox<String>(new String[] {"AT28C256", "GLS29EE010", "AM29F040"});
-		serialChooserBox.addActionListener(new ActionListener() {
+		chipChooserBox = new JComboBox<String>(new String[] {"AT28C256", "GLS29EE010", "AM29F040"});
+		chipChooserBox.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String s = (String) serialChooserBox.getSelectedItem();
+				String s = (String) chipChooserBox.getSelectedItem();
 				parentFrame.changeChip(s);
 			}
 			
+		});
+		serialChooserBox = new JComboBox<String>(ports);
+		serialChooserBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String s = (String) serialChooserBox.getSelectedItem();
+				try {
+					parentFrame.getSerialManager().connect(s, 19200);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		});
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -61,6 +78,8 @@ public class ButtonPanel extends JPanel {
 		c.weightx = 1;
 		c.gridwidth = 2;
 		c.insets = new Insets(0, 12, 12, 0);
+		add(chipChooserBox, c);
+		c.gridy = 1;
 		add(serialChooserBox, c);
 	}
 	

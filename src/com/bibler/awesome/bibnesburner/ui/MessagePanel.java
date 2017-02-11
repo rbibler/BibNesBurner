@@ -35,7 +35,7 @@ public class MessagePanel extends JPanel implements Notifiable {
 	}
 
 	@Override
-	public void takeNotice(Object notifier, String message) {
+	public void takeNotice(Object notifier, Object packet, String message) {
 		if(notifier instanceof BitBurner) {
 			if(message.startsWith(BitBurner.updateMessageAreaChar)) {
 				SwingUtilities.invokeLater(new Runnable() {

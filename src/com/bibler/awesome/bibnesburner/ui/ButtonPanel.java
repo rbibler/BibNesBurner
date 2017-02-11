@@ -14,13 +14,16 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import com.bibler.awesome.bibnesburner.burnerutils.BitBurner;
+
 import gnu.io.CommPortIdentifier;
 
 public class ButtonPanel extends JPanel {
 	
 	private JButton loadButton;
 	private JButton readButton;
-	private JButton writeButton;
+	private JButton burnPrgButton;
+	private JButton burnChrButton;
 	private JComboBox<String> chipChooserBox;
 	private JComboBox<String> serialChooserBox;
 	private MainFrame parentFrame;
@@ -36,7 +39,8 @@ public class ButtonPanel extends JPanel {
 	
 	private void initialize(String[] ports) {
 		loadButton = new JButton("Load Rom");
-		writeButton = new JButton("Burn Rom");
+		burnPrgButton = new JButton("Burn PRG");
+		burnChrButton = new JButton("Burg CHR");
 		readButton = new JButton("Read Rom");
 		chipChooserBox = new JComboBox<String>(new String[] {"AT28C256", "GLS29EE010", "AM29F040"});
 		chipChooserBox.addActionListener(new ActionListener() {
@@ -70,15 +74,23 @@ public class ButtonPanel extends JPanel {
 		c.insets = new Insets(0, 12, 12, 0);
 		c.fill = GridBagConstraints.BOTH;
 		add(loadButton, c);
+		
 		c.gridx = 1;
-		add(writeButton, c);
-		c.gridx = 2;
+		add(burnPrgButton, c);
+		
+		c.gridy = 1;
+		add(burnChrButton, c);
+		
+		c.gridx = 0;
 		add(readButton, c);
+		
+		c.gridy = 0;
 		c.gridx = 3;
 		c.weightx = 1;
 		c.gridwidth = 2;
 		c.insets = new Insets(0, 12, 12, 0);
 		add(chipChooserBox, c);
+		
 		c.gridy = 1;
 		add(serialChooserBox, c);
 	}
@@ -86,11 +98,14 @@ public class ButtonPanel extends JPanel {
 	public void initializeButtonClicks() {
 		ButtonClickListener listener = new ButtonClickListener();
 		loadButton.setActionCommand("LOAD");
-		writeButton.setActionCommand("BURN");
+		burnPrgButton.setActionCommand("BURN_PRG");
+		burnChrButton.setActionCommand("BURN_CHR");
 		readButton.setActionCommand("READ");
 		loadButton.addActionListener(listener);
-		writeButton.addActionListener(listener);
+		burnPrgButton.addActionListener(listener);
+		burnChrButton.addActionListener(listener);
 		readButton.addActionListener(listener);
+		
 	}
 	
 	private class ButtonClickListener implements ActionListener {
@@ -102,11 +117,14 @@ public class ButtonPanel extends JPanel {
 			case "LOAD":
 				parentFrame.loadNewFile();
 				break;
-			case "BURN":
-				parentFrame.initializeBurnSequence();
+			case "BURN_PRG":
+				parentFrame.initializeBurnSequence(BitBurner.PRG_BURN);
+				break;
+			case "BURN_CHR":
+				parentFrame.initializeBurnSequence(BitBurner.CHR_BURN);
 				break;
 			case "READ":
-				//parentFrame.initializeReadSequence();
+				parentFrame.readFullRom();
 				break;
 		
 			}

@@ -28,7 +28,6 @@ public class SerialPortInstance implements Runnable, Notifier{
 	private OutputStream out = null;
 	private SerialPort serialPort = null;
 	private BufferedWriter serialWriter = null;
-	private BufferedReader serialReader = null;
 	private int[] messageBuffer = new int[0xFF];
 	private int messageIndex;
 	private int serialState;
@@ -37,11 +36,9 @@ public class SerialPortInstance implements Runnable, Notifier{
 	private final int IN_MSG = 0x03;
 	private final int AFTER_ESC = 0x04;
 	
-	private final int START_BYTE = 0x7D;
-	private final int STOP_BYTE = 0x7E;
-	private final int SUCCESS = 0x8E;
-	private final int FAILURE = 0x9C;
-	private final int ESC = 0x12;
+	private final int START_BYTE = 0x67;
+	private final int STOP_BYTE = 0x68;
+	private final int ESC = 0x6C;
 	
 	private ArrayList<Notifiable> objectsToNotify = new ArrayList<Notifiable>();
 
@@ -62,8 +59,6 @@ public class SerialPortInstance implements Runnable, Notifier{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
-        serialReader = new BufferedReader(new InputStreamReader(in));
 	}
 	    
 	public InputStream getSerialIn() {
@@ -100,18 +95,21 @@ public class SerialPortInstance implements Runnable, Notifier{
 		int read;
 		try {
 			do {
-				read = serialReader.read();
+				read = in.read();
 				processNewCharacter(read);
-			} while(read != -1 && serialReader.ready());
+			} while(read != -1 && in.available() > 0);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	private void processNewCharacter(int newChar) {
+		if(newChar < 0x10) {
+			System.out.print("0");
+		}
+		System.out.print(Integer.toHexString(newChar & 0xFF) + " ");
 		switch(serialState) {
 		case WAIT_HEADING:
-			
 			if(newChar == START_BYTE) {
 				serialState = IN_MSG;
 			}
@@ -120,26 +118,24 @@ public class SerialPortInstance implements Runnable, Notifier{
 			if(newChar == STOP_BYTE) {
 				processMessage();
 			} else if(newChar == ESC) {
+				System.out.print("Escaping! ");
 				serialState = AFTER_ESC;
 			} else {
 				addToMessage(newChar);
 			}
 			break;
 		case AFTER_ESC:
-			if(newChar == STOP_BYTE) {
-				processMessage();
-			} else {
 				addToMessage(newChar);
-			}
+				serialState = IN_MSG;
 			break;
 		}
 	}
 	
 	private void processMessage() {
+		System.out.println(Integer.toHexString(messageIndex));
 		serialState = WAIT_HEADING;
-		for(int i = 0; i < messageIndex; i++) {
-			System.out.print((char) messageBuffer[i]);
-		}
+		notifyAllObjects(messageBuffer, "" + messageIndex);
+		messageIndex = 0;
 	}
 	
 	private void addToMessage(int charToAdd) {
@@ -147,9 +143,9 @@ public class SerialPortInstance implements Runnable, Notifier{
 	}
 
 	@Override
-	public void notifyAllObjects(String message) {
+	public void notifyAllObjects(Object packet, String message) {
 		for(Notifiable notifiable : objectsToNotify) {
-			notifiable.takeNotice(this, message);
+			notifiable.takeNotice(this, packet, message);
 		}
 		
 	}
@@ -158,7 +154,7 @@ public class SerialPortInstance implements Runnable, Notifier{
 	public void run() {
 		while(!Thread.interrupted()) {
 			try {
-				if(serialReader.ready()) {	
+				if(in.available() > 0) {	
 					handleSerialInput();
 				}
 			} catch (IOException e) {}
@@ -174,18 +170,17 @@ public class SerialPortInstance implements Runnable, Notifier{
 		} catch(IOException e) {}
 	}
 	
-	public void writeBlock(byte[] block) {
+	public void writeBlock(int[] block, int startOffset, int length) {
+		int outByte;
 		try {
 			out.write(START_BYTE);
-			out.write(block);
-			out.write(STOP_BYTE);
-		} catch(IOException e) {}
-	}
-	
-	public void writeBlock(byte[] block, int startOffset, int length) {
-		try {
-			out.write(START_BYTE);
-			out.write(block, startOffset, length);
+			for(int i = startOffset; i < startOffset + length; i++) {
+				outByte = (block[i] & 0xFF);
+				if(outByte == START_BYTE || outByte == STOP_BYTE || outByte == ESC) {
+					out.write(ESC);
+				}
+				out.write(outByte);
+			}
 			out.write(STOP_BYTE);
 		} catch(IOException e) {}
 	}

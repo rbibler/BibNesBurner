@@ -131,7 +131,7 @@ public class InfoPanel extends JPanel implements Notifiable {
 	}
 
 	@Override
-	public void takeNotice(Object notifier, String message) {
+	public void takeNotice(Object notifier, Object packet, String message) {
 		if(notifier instanceof FileLoader) {
 			setFileName(message);
 		} else if(notifier instanceof NESFile) {

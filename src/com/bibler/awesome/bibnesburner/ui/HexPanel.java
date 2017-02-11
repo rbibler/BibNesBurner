@@ -6,6 +6,7 @@ import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -16,27 +17,24 @@ import tv.porst.jhexview.JHexView;
 import tv.porst.jhexview.JHexView.DefinitionStatus;
 import tv.porst.jhexview.SimpleDataProvider;
 
-public class HexPanel extends JPanel implements Notifiable {
+public class HexPanel extends JPanel  {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4077584869548116559L;
 	JHexView view;
-	JScrollPane scrollPane;
 	
-	public HexPanel(int width, int height) {
+	public HexPanel() {
 		super();
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		initialize(width, height);
+		initialize();
 	}
 	
-	private void initialize(int width, int height) {
+	private void initialize() {
 		view = new JHexView();
-		scrollPane = new JScrollPane(view);
-		scrollPane.setPreferredSize(new Dimension(width, height));
 		setLayout(new BorderLayout());
-		add(scrollPane, BorderLayout.CENTER);
+		add(view, BorderLayout.CENTER);
 	}
 	
 	public void setHexData(int[] data) {
@@ -46,21 +44,9 @@ public class HexPanel extends JPanel implements Notifiable {
 		view.setBytesPerColumn(1);
 		view.repaint();
 	}
-	
-	@Override
-	public void takeNotice(Object notifier, String message) {
-		if(notifier instanceof BitBurner) {
-			if(message.startsWith(BitBurner.updateHexAreaChar)) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						//panelText.setText(panelText.getText() + "\n" + message.substring(1));
-					}
-				});
-				
-			}
-		}
-		
-	}
 
+	public void colorizeValues(int startAddress, int length, Color color, Color bgColor) {
+		view.colorize(1, startAddress, length, color, bgColor);
+	}
+	
 }

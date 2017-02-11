@@ -1,5 +1,6 @@
 package com.bibler.awesome.bibnesburner.ui;
 
+import java.awt.Color;
 import java.io.FileInputStream;
 
 import javax.swing.JFrame;
@@ -24,28 +25,32 @@ public class MainFrame extends JFrame {
 	public MainFrame() {
 		super();
 		serialManager = new SerialPortManager();
-		burner = new BitBurner();
+		burner = new BitBurner(this);
 		loader = new FileLoader();
 		panel = new MainPanel(this);
 		loader.registerObjectToNotify(panel.getInfoPanel());
 		burner.registerObjectToNotify(panel.getInfoPanel());
 		burner.registerObjectToNotify(panel.getMessagePanel());
-		burner.registerObjectToNotify(panel.getHexPanel());
 		add(panel);
 		pack();
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		changeChip("AT28C256");
 	}
 	
 	public void loadNewFile() {
 		FileInputStream f = loader.loadFile();
 		NESFile nesFile = new NESFile(f, panel.getInfoPanel(), loader.getBin());
-		panel.getHexPanel().setHexData(nesFile.getCombinedData());
+		panel.getRomPanel().setHexData(nesFile.getCombinedData());
 		burner.setFile(nesFile);
 	}
 	
-	public void initializeBurnSequence() {
-		burner.startFullBurnSequence();
+	public void initializeBurnSequence(int thingToBurn) {
+		burner.startFullBurnSequence(thingToBurn);
+	}
+	
+	public void readFullRom() {
+		burner.readFullRom();
 	}
 	
 	public void changeChip(String chip) {
@@ -58,7 +63,7 @@ public class MainFrame extends JFrame {
 
 	public void connectSerial(String s) {
 		try {
-			serialManager.connect(s, 19200);
+			serialManager.connect(s, 57600);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -68,6 +73,23 @@ public class MainFrame extends JFrame {
 		} else {
 			System.out.println("NO PORT!");
 		}
+	}
+
+	public void setReadData(int[] dataIn) {
+		panel.getReadPanel().setHexData(dataIn);
+	}
+	
+	public void setRomData(int[] data) {
+		panel.getRomPanel().setHexData(data);
+		
+	}
+	
+	public void colorizeRomValues(int startAddress, int length, Color color, Color bgColor) {
+		panel.getRomPanel().colorizeValues(startAddress, length, color, bgColor);
+	}
+	
+	public void colorizeReadValues(int startAddress, int length, Color color, Color bgColor) {
+		panel.getReadPanel().colorizeValues(startAddress, length, color, bgColor);
 	}
 
 }

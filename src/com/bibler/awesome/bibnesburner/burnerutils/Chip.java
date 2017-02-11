@@ -61,5 +61,12 @@ public class Chip {
 		this.currentReadAddress = currentReadAddress;
 		
 	}
+	
+	public void printChipInfo() {
+		System.out.println("    Chip Name: " + this.chipIdentifier);
+		System.out.println("    Page Size: " + pageSize);
+		System.out.println("    Chip Size: " + chipSize);
+		
+	}
 
 }

@@ -10,8 +10,8 @@ import com.bibler.awesome.bibnesburner.ui.InfoPanel;
 
 public class NESFile implements Notifier {
 	
-	private byte[] prg = new byte[0x8000];
-	private byte[] chr = new byte[0x8000];
+	private int[] prg = new int[0x8000];
+	private int[] chr = new int[0x8000];
 	
 	private ArrayList<Notifiable> objectsToNotify = new ArrayList<Notifiable>();
 	
@@ -43,11 +43,11 @@ public class NESFile implements Notifier {
 				readIn.add(r);
 			} while(r != -1);
 		} catch(IOException e) {}
-		prg = new byte[readIn.size()];
+		prg = new int[readIn.size()];
 		for(int i = 0; i < prg.length; i++) {
 			prg[i] = (byte) (readIn.get(i) & 0xFF);
 		}
-		notifyAllObjects("P" + prg.length);
+		notifyAllObjects(null, "P" + prg.length);
 	}
 	
 	public void splitFile(FileInputStream f) {
@@ -57,15 +57,15 @@ public class NESFile implements Notifier {
 		} catch(IOException e) {}
 		int prgSize = headerBytes[4] * 0x4000;
 		int chrSize = headerBytes[5] * 0x2000;
-		notifyAllObjects("P" + prgSize);
-		notifyAllObjects("C" + chrSize);
+		notifyAllObjects(null, "P" + prgSize);
+		notifyAllObjects(null, "C" + chrSize);
 		fillPrg(f, prgSize);
 		fillChr(f, chrSize);
 	}
 	
 	private void fillPrg(FileInputStream f, int prgSize) {
 		byte[] tempPrg = new byte[prgSize];
-		prg = new byte[prgSize];
+		prg = new int[0x8000];
 		try {
 			f.read(tempPrg);
 		} catch(IOException e) {}
@@ -87,18 +87,18 @@ public class NESFile implements Notifier {
 		}
 	}
 	
-	public byte[] getPrg() {
+	public int[] getPrg() {
 		return prg;
 	}
 	
-	public byte[] getChr() {
+	public int[] getChr() {
 		return chr;
 	}
 
 	@Override
-	public void notifyAllObjects(String message) {
+	public void notifyAllObjects(Object packet, String message) {
 		for(Notifiable notifiable : objectsToNotify) {
-			notifiable.takeNotice(this, message);
+			notifiable.takeNotice(this, packet, message);
 		}
 		
 	}

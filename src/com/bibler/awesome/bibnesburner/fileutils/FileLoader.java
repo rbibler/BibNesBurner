@@ -58,15 +58,15 @@ public class FileLoader implements Notifier {
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
 			f = chooser.getSelectedFile();
 			fileType = f.getName();
-			notifyAllObjects(f.getName());
+			notifyAllObjects(this, f.getName());
 		} 
 		return f;
 	}
 
 	@Override
-	public void notifyAllObjects(String message) {
+	public void notifyAllObjects(Object packet, String message) {
 		for(Notifiable notifiable : objectsToNotify) {
-			notifiable.takeNotice(this, message);
+			notifiable.takeNotice(this, packet, message);
 		}
 		
 	}

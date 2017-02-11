@@ -13,7 +13,7 @@ public class ChipFactory {
 			chip = new Chip(0x8000, 0x40, "C0");
 			break;
 		case GLS29EE010:
-			chip = new Chip(0x20000, 0x40, "C1");
+			chip = new Chip(0x20000, 0x80, "C1");
 			break;
 		case AM29F040:
 			chip = new Chip(0x20000, 0x40, "C1");
@@ -29,7 +29,7 @@ public class ChipFactory {
 			chip = new Chip(0x8000, 0x40, "C0");
 			break;
 		case "GLS29EE010":
-			chip = new Chip(0x20000, 0x40, "C1");
+			chip = new Chip(0x20000, 0x80, "C1");
 			break;
 		case "AM29F040":
 			chip = new Chip(0x20000, 0x40, "C1");

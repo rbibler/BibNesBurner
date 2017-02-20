@@ -7,7 +7,6 @@ import com.bibler.awesome.bibnesburner.interfaces.Notifiable;
 import com.bibler.awesome.bibnesburner.interfaces.Notifier;
 import com.bibler.awesome.bibnesburner.serialutils.SerialPortInstance;
 import com.bibler.awesome.bibnesburner.ui.MainFrame;
-import com.bibler.awesome.bibnesburner.utils.Utility;
 
 public class BitBurner implements Notifiable, Notifier {
 	
@@ -17,6 +16,9 @@ public class BitBurner implements Notifiable, Notifier {
 	private final int SUCCESS = 0x69;
 	private final int FAIL = 0x6B;
 	private final int STOP_BURN = 0x73;
+	
+	private final int CHANGE_TO_PRG = 0x70;
+	private final int CHANGE_TO_CHR = 0x71;
 	
 	private NESFile fileToBurn;
 	private SerialPortInstance serial;
@@ -104,11 +106,11 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	
 	private void writeROM() {
-		/*if(state == PRG_BURN) {
+		if(state == PRG_BURN) {
 			serial.writeInstruction(CHANGE_TO_PRG);
 		} else {
 			serial.writeInstruction(CHANGE_TO_CHR);
-		}*/
+		}
 		chip.resetBurnAddress();
 		currentRom = state == PRG_BURN ? fileToBurn.getPrg() : fileToBurn.getChr();
 		mainFrame.setRomData(currentRom);

@@ -1,6 +1,5 @@
 package com.bibler.awesome.bibnesburner.burnerutils;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
 import com.bibler.awesome.bibnesburner.interfaces.Notifiable;
@@ -35,9 +34,8 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	public static final int PRG_BURN = 0x32;
 	public static final int CHR_BURN = 0x33;
-	private final String newLine = "\n";
 	
-	private int[] dataIn = new int[0x8000];
+	private int[] dataIn = new int[0x16000];
 	private int[] currentRom;
 	private int currentRomSize;
 	

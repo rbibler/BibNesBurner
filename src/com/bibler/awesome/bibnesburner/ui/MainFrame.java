@@ -35,7 +35,6 @@ public class MainFrame extends JFrame {
 		pack();
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		changeChip("AT28C256");
 	}
 	
 	public void loadNewFile() {

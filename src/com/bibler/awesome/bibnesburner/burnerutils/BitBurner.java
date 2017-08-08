@@ -1,5 +1,6 @@
 package com.bibler.awesome.bibnesburner.burnerutils;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import com.bibler.awesome.bibnesburner.fileutils.NESFile;
 import com.bibler.awesome.bibnesburner.interfaces.Notifiable;
@@ -34,8 +35,9 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	public static final int PRG_BURN = 0x32;
 	public static final int CHR_BURN = 0x33;
+	private final String newLine = "\n";
 	
-	private int[] dataIn = new int[0x16000];
+	private int[] dataIn = new int[0x8000];
 	private int[] currentRom;
 	private int currentRomSize;
 	
@@ -63,6 +65,7 @@ public class BitBurner implements Notifiable, Notifier {
 	}
 	
 	public void changeChip(String chipID) {
+		serial.writeBlock(new int[] {0x72, 1}, 0, 2);
 		chip = ChipFactory.createChip(chipID);
 		System.out.println("New Chip:");
 		chip.printChipInfo();
@@ -104,11 +107,7 @@ public class BitBurner implements Notifiable, Notifier {
 	
 	
 	private void writeROM() {
-		if(state == PRG_BURN) {
-			serial.writeInstruction(CHANGE_TO_PRG);
-		} else {
-			serial.writeInstruction(CHANGE_TO_CHR);
-		}
+		
 		chip.resetBurnAddress();
 		currentRom = state == PRG_BURN ? fileToBurn.getPrg() : fileToBurn.getChr();
 		mainFrame.setRomData(currentRom);
@@ -121,6 +120,7 @@ public class BitBurner implements Notifiable, Notifier {
 			serial.writeBlock(currentRom, currentBurnAddress, pageSize);
 			long time = System.currentTimeMillis();
 			while(messageSuccess == false){
+				System.out.println("IN IT!");
 				if(System.currentTimeMillis() - time > 15000) {
 					logMessage(updateMessageAreaChar + " FAIL at " + currentBurnAddress + "!");
 					break;
@@ -129,6 +129,9 @@ public class BitBurner implements Notifiable, Notifier {
 					Thread.sleep(10);
 				} catch(InterruptedException e) {}
 			}
+				//try {
+					//Thread.sleep(200);
+				//} catch(InterruptedException e) {}
 			chip.incrementBurnAddressByPage();
 			logMessage(updateProgressBarChar + ((float) (chip.getCurrentBurnAddress()) / currentRomSize));
 			messageSuccess = false;
